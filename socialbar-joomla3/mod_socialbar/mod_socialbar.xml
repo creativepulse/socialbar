@@ -2,12 +2,12 @@
 <extension type="module" version="3.2" client="site" method="upgrade">
     <name>Social Bar</name>
     <author>Creative Pulse</author>
-    <creationDate>October 2013</creationDate>
-    <copyright>(C)2011-2013 Creative Pulse. All rights reserved.</copyright>
+    <creationDate>June 2014</creationDate>
+    <copyright>(C)2011-2014 Creative Pulse. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <authorEmail>joomla.support@creativepulse.gr</authorEmail>
     <authorUrl>www.creativepulse.gr</authorUrl>
-    <version>1.1</version>
+    <version>1.3</version>
     <description>Shows links that help users connect with the website through email, rss feeds, social networks.</description>
 
     <files>
@@ -16,7 +16,6 @@
         <filename>index.html</filename>
         <folder>js</folder>
         <folder>tmpl</folder>
-        <folder>tpl_default</folder>
     </files>
 
     <config>
@@ -37,6 +36,8 @@
                 <field name="custom3" type="textarea" filter="raw" rows="3" cols="40" default="" label="Custom 3" description="Custom element. Write in HTML. Use [LINK] for the link and [TITLE] for the title of the linked page." />
                 <field name="custom4" type="textarea" filter="raw" rows="3" cols="40" default="" label="Custom 4" description="Custom element. Write in HTML. Use [LINK] for the link and [TITLE] for the title of the linked page." />
                 <field name="custom5" type="textarea" filter="raw" rows="3" cols="40" default="" label="Custom 5" description="Custom element. Write in HTML. Use [LINK] for the link and [TITLE] for the title of the linked page." />
+
+                <field name="pos_x" type="text" default="" label="Position X" description="List of positions to be used for their left values. Each element in the list separates from others by using | and they contain the CSS selector a : symbol and a positive or negative integer number. Example: #id1:10|.class1:-50" />
 
                 <field name="start_y" type="text" default="" label="Opening Y position" description="Height from the top, in pixels, where the bar must appear in the opening of the page." />
 

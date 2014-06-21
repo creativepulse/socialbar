@@ -1,24 +1,29 @@
 <?php
 
 /**
- * social bar
+ * Social Bar
  *
- * @version 1.1
+ * @version 1.3
  * @author Creative Pulse
- * @copyright Creative Pulse 2011-2013
+ * @copyright Creative Pulse 2011-2014
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  * @link http://www.creativepulse.gr
  */
 
-// no direct access
-defined( '_JEXEC' ) or die( 'Restricted access' );
 
+if (!class_exists('CpWidget_SocialBar')) {
 
-if (!class_exists('Mod_SocialBar')) {
-    
-    class Mod_SocialBar {
+    class CpWidget_SocialBar {
 
-        function instance_id($new = false) {
+        public static function get_model() {
+            static $instance = null;
+            if ($instance === null) {
+                $instance = new CpWidget_SocialBar();
+            }
+            return $instance;
+        }
+
+        public function view_id($new = false) {
             static $num = 0;
 
             if ($new) {
@@ -28,40 +33,75 @@ if (!class_exists('Mod_SocialBar')) {
             return $num;
         }
 
-        function prepare($params) {
-            $id = $this->instance_id(true);
-            
+        public function load_libraries($name) {
+            static $libraries = array();
+            $result = !isset($libraries[$name]);
+            $libraries[$name] = true;
+            return $result;
+        }
+
+        public function json_esc($input, $esc_html = true) {
+            $result = '';
+            if (!is_string($input)) {
+                $input = (string) $input;
+            }
+
+            $conv = array("\x08" => '\\b', "\t" => '\\t', "\n" => '\\n', "\f" => '\\f', "\r" => '\\r', '"' => '\\"', "'" => "\\'", '\\' => '\\\\');
+            if ($esc_html) {
+                $conv['<'] = '\\u003C';
+                $conv['>'] = '\\u003E';
+            }
+
+            for ($i = 0, $len = strlen($input); $i < $len; $i++) {
+                if (isset($conv[$input[$i]])) {
+                    $result .= $conv[$input[$i]];
+                }
+                else if ($input[$i] < ' ') {
+                    $result .= sprintf('\\u%04x', ord($input[$i]));
+                }
+                else {
+                    $result .= $input[$i];
+                }
+            }
+
+            return $result;
+        }
+
+        public function prepare($params) {
             $this->html_elements = array();
+            $this->pos_x = (string) $params->get('pos_x', '');
+            $this->start_y = intval($params->get('start_y', ''));
+            $this->min_y = intval($params->get('min_y', ''));
 
+            $document = JFactory::getDocument();
+            $document_title = $document->title;
 
-            // find default link url
+            // find default url link
             switch ($params->get('default_link_type', '')) {
                 case 'home':
                     $default_url = JURI::base();
                     break;
 
                 case 'custom':
-                    $default_url = trim($params->get('default_custom_url', ''));
+                    $default_url = trim((string) $params->get('default_custom_url', ''));
                     break;
 
                 case 'active':
                 default:
                     $default_url = 'http' . (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) != 'off' ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
             }
-            
-            
+
             // prepare custom html elements
-            $document = JFactory::getDocument();
             $custom_elements = array();
             for ($i = 1; $i <= 5; $i++) {
-                $st = trim($params->get('custom' . $i, ''));
-                $st = preg_replace('/\[\s*TITLE\s*\]/i', htmlspecialchars($document->title), $st);
+                $st = trim((string) $params->get('custom' . $i, ''));
+                $st = preg_replace('/\[\s*TITLE\s*\]/i', $document_title, $st);
                 $st = preg_replace('/\[\s*LINK\s*\]/i', $default_url, $st);
                 $custom_elements['custom' . $i] = $st;
             }
 
             // process elements
-            $elements = $params->get('elements', '');
+            $elements = (string) $params->get('elements', '');
             $elements = str_replace("\r", '', $elements);
             $elements = explode("\n", $elements);
             foreach ($elements as $element) {
@@ -93,13 +133,13 @@ if (!class_exists('Mod_SocialBar')) {
 
                     case 'email':
                         $html =
-'<a href="mailto:?subject=' . rawurlencode($document->title) . '&amp;body=' . rawurlencode($url) . '"><img src="modules/mod_socialbar/tpl_default/btn_email.png"></a>
+'<a href="mailto:?subject=' . rawurlencode(html_entity_decode($document_title)) . '&amp;body=' . rawurlencode($url) . '">Email</a>
 ';
                         break;
 
                     case 'rss':
                         $html =
-'<a href="' . $pars['url'] . '"><img src="modules/mod_socialbar/tpl_default/btn_rss.png"></a>
+'<a href="' . $pars['url'] . '">RSS</a>
 ';
                         break;
 
@@ -166,13 +206,13 @@ if (!class_exists('Mod_SocialBar')) {
             }
 
             // output javascript calls
-            if ($id == 1) {
-                $document->addScript('modules/mod_socialbar/js/mod_socialbar.js');
-                $document->addScriptDeclaration('document.mod_socialbar_conf = [];');
+            if ($this->load_libraries('*')) {
+                $document->addScript('modules/mod_socialbar/js/socialbar.js');
+                $document->addScriptDeclaration('document.cpwdg_socialbar_conf = [];');
             }
-            $document->addScriptDeclaration('document.mod_socialbar_conf.push({ iname: "mod_socialbar_' . $id . '", idx: ' . $id . ', start_y: ' . intval($params->get('start_y', 0)) . ', min_y: ' . intval($params->get('min_y', 0)) . ' })');
         }
     }
+
 }
 
 ?>
